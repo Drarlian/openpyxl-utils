@@ -13,14 +13,13 @@ def pegar_dados_intervalo_planilha(conteudo, intervalo: str, ultima_linha: bool 
     :return: Retorna uma lista contendo os valores.
     """
     if ultima_linha:
-        intervalo: str = intervalo + descobrir_linha_vazia_planilha(conteudo, intervalo[0])
+        intervalo: str = intervalo + descobrir_linha_vazia_planilha(conteudo)
 
     planilha = iniciar_planilha(conteudo)
     aba_ativa = planilha.active
 
     try:
         valores: list = []
-        valores_linha: list = []
 
         merged_ranges = aba_ativa.merged_cells.ranges  # -> Coleta todas as faixas de células mescladas na aba ativa da planilha.
         """
@@ -31,27 +30,26 @@ def pegar_dados_intervalo_planilha(conteudo, intervalo: str, ultima_linha: bool 
         """
 
         # Adicionei os if's para impedir que dados vazios sejam obtidos.
-        for celula in aba_ativa[intervalo]:
-            contador_coluna_vazia: int = 0  # -> Contador de colunas vazias.
-            for elemento in celula:
-                if elemento.value is not None:
-                    valores_linha.append(elemento.value)
-                else:
-                    if is_merged(elemento, merged_ranges):
-                        pass
-                    else:
-                        if contador_coluna_vazia < 1:  # Permite até 1 coluna vazia.
-                            contador_coluna_vazia += 1
-                        else:
-                            break  # -> Talvez eu possa tirar esse else e deixar ele pegar uma linha onde um elemento seja None.
+        for linha in aba_ativa[intervalo]:
+            valores_linha: list = []
+            is_full_empty: bool = True
+
+            for celula in linha:
+                if celula.value is not None:
+                    valores_linha.append(celula.value)
+                    is_full_empty = False
+                elif is_merged(celula, merged_ranges):
+                    pass  # -> Célula mesclada sem valor direto
+                else:  # -> Se não tiver valor, coloco string vazia.
+                    valores_linha.append('')  # -> # Mantém a posição.
+
             if len(valores_linha) > 0:
-                valores.append(valores_linha.copy())
-                valores_linha.clear()
-            # else:
-            # break  # -> Para a procura se achar algum registro vazio.
+                if not is_full_empty:
+                    valores.append(valores_linha)
     except Exception as e:
         print(f"[ERRO] pegar_dados_intervalo_planilha: {e}")
         return []
     else:
-        planilha.close()
         return valores
+    finally:
+        planilha.close()

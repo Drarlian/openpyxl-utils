@@ -19,54 +19,45 @@ def iniciar_planilha(conteudo):
         return planilha
 
 
-def descobrir_linha_vazia_planilha(conteudo, coluna: str) -> str:
+def descobrir_linha_vazia_planilha(conteudo) -> str:
     """
     Descobre o número da ultima linha preenchida na planilha da coluna informada.
     Mesmo se houver linhas vazias entres linhas preenchidas, a última será pega.
+    Versão extremamente otimizada para obter a ultima linha.
     :param conteudo: Arquivo da planilha excel, podendo ser um path ou o arquivo em bytes.
-    :param coluna: Coluna da planilha onde será procurado o último elemento.
     :return: Retorna o número da ultima linha como uma string.
     """
+    # 1) Abre em modo normal (não read_only, porque queremos ws._cells)
     planilha = iniciar_planilha(conteudo)
     aba_ativa = planilha.active
 
-    ultima_posicao: int = aba_ativa[coluna][-1].row
+    # # 2) Converte letra de coluna em índice numérico
+    # coluna_idx = column_index_from_string(coluna.upper())
 
-    ultima_linha: int = 1
-    cont: int = 0
+    # print(list(ws[coluna])[-1].row)
+    try:
+        # 3) Pega todas as chaves (row, col) que o OpenPyXL carrega em _cells
+        # e filtra só as que têm coluna = col_idx
+        # coord é uma tupla (row, col)
+        # ultima_linha = max([row for (row, col) in ws._cells.keys()], default=1)
+        ultima_linha = max([cell.row for cell in aba_ativa._cells.values() if cell.value is not None], default=1)
+        # default=1 -> Normalmente é a linha onde eu começo a preencher.
 
-    for i, celula in enumerate(aba_ativa[f'{coluna}1:{coluna}{ultima_posicao}']):
-        if celula[0].value is not None:
-            ultima_linha: int = celula[0].row
-        else:
-            # Ignoro a quantidade de linhas que eu percebi que eu preciso passar para chegar na proxima linha NÃO vazia:
-            if cont > 0:
-                cont -= 1  # Diminuo o cont pois acabei de passar por uma linha que estou ignorando.
-            else:
-                # aba_ativa[coluna][i].row == celula[0].row  | Ambos são a mesma coisa.
-                if aba_ativa[coluna][i].row < ultima_posicao:
-                    # VERIFICANDO SE EXISTE ALGUMA LINHA PREENCHIDA DA POSIÇÃO ATUAL ATE A ULTIMA LINHA DA COLUNA:
-                    quantidade_linha_faltante: int = ultima_posicao - celula[0].row
-                    elemento: int = 0  # -> Variável utilizada para verificar se foi encontrada uma linha NÃO vazia.
-                    # Loop baseado na quantidade de linhas faltantes, se faltam 7 linhas para acabar,
-                    # o loop vai rodar 7 vezes.
-                    for c in range(1, quantidade_linha_faltante + 1):
-                        valor = aba_ativa[coluna][i + c].value  # PEGANDO O VALOR PRESENTE NA LINHA *SEGUINTE*.
-                        # ^ Para verificar em seguida se a mesma é uma linha vazia ou não.
-                        if valor is not None:
-                            elemento: int = 1  # -> Indicador de que encontrei uma linha NÃO vazia.
-                            cont = c - 1  # -> Quantidade de linhas que posso ignorar até a proxima linha NÃO vazia.
-                            break
-                            # ^ Se encontro alguma linha não vazia no meio do caminho, nem continuo olhando os próximos,
-                            # pois já achei o que queria.
-                    if elemento == 0:  # Se não encontrei nenhuma linha preenchida saio do loop e já sei a última linha.
-                        break
-                else:
-                    break
+        # print(ws._cells)
+        # print(ws._cells.keys())
+        # print(ws._cells.values())
 
-    planilha.close()
-
-    return str(ultima_linha)
+        return str(ultima_linha)
+    except AttributeError:
+        # 3.1) fallback do métod0 oficial (Percorre todas as células visíveis na planilha):
+        ultima_linha = 1
+        for row in aba_ativa.iter_rows():
+            for cell in row:
+                if cell.value is not None:
+                    ultima_linha = max(ultima_linha, cell.row)
+        return str(ultima_linha)
+    finally:
+        planilha.close()
 
 
 def is_merged(cell, merged_ranges):
@@ -94,11 +85,7 @@ def converter_objeto_para_planilha(data: List[dict]) -> bytes:
     # Aplica o estilo negrito da planilha em uma variável:
     bold_font = Font(bold=True)
 
-    # Alterando a posição do campo "unitPrice" para ficar após o campo "currency":
-    # headers.insert(12, 'unitPrice')
-    # headers = headers[0: len(headers) - 1]
-
-    # Transformando o formato "supplierReference" em "SUPPLIER REFERENCE":
+    # Transformando todos os campos do formato "campoTeste" para "CAMPO TESTE":
     headers = [camel_case_to_upper_case_with_spaces(element) for element in headers]
 
     # Adicionando o cabeçalho na planilha:
