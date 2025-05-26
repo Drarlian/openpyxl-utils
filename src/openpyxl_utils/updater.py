@@ -1,4 +1,4 @@
-from src.openpyxl_utils.utils import iniciar_planilha
+from openpyxl_utils.utils import iniciar_planilha
 
 
 def atualizar_dados_intervalo_planilha(conteudo, valores_adicionar: list, intervalo: str) -> None:

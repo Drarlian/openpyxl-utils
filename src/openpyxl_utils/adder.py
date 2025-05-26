@@ -1,4 +1,4 @@
-from src.openpyxl_utils.utils import iniciar_planilha, descobrir_linha_vazia_planilha
+from openpyxl_utils.utils import iniciar_planilha, descobrir_linha_vazia_planilha
 
 
 def adicionar_dados_fim_coluna(conteudo, valores_adicionar: list, coluna_inicial: str, coluna_final: str) -> None:

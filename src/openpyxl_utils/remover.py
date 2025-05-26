@@ -1,4 +1,4 @@
-from src.openpyxl_utils.utils import iniciar_planilha, descobrir_linha_vazia_planilha
+from openpyxl_utils.utils import iniciar_planilha, descobrir_linha_vazia_planilha
 
 
 def remover_dados_intervalo_planilha(conteudo, intervalo: str, ultima_linha: bool = False) -> None:

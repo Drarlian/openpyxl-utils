@@ -1,4 +1,4 @@
-from src.openpyxl_utils.utils import iniciar_planilha, descobrir_linha_vazia_planilha, is_merged, List
+from openpyxl_utils.utils import iniciar_planilha, descobrir_linha_vazia_planilha, is_merged, List
 
 
 def pegar_dados_intervalo_planilha(conteudo, intervalo: str, ultima_linha: bool = False) -> List[list]:
