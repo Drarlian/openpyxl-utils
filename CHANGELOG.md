@@ -4,6 +4,12 @@ Todos os formatos seguem o padrão [Semantic Versioning](https://semver.org/lang
 
 ---
 
+## [0.0.3] - 2025-05-26
+### Fixed
+- Corrigidos erros de importação que impediam o funcionamento correto da biblioteca após a instalação via PyPI.
+
+---
+
 ## [0.0.2] - 2025-05-18
 
 ### Changed
