@@ -1,6 +1,6 @@
 [project]
 name = "openpyxl-utils"
-version = "0.0.2"
+version = "0.0.3"
 description = "Funções utilitárias para facilitar o uso da biblioteca openpyxl."
 authors = [
     { name = "Witor Oliveira", email = "witoredson@gmail.com" }
